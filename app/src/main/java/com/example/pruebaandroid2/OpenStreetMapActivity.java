@@ -3,6 +3,9 @@ package com.example.pruebaandroid2;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -45,16 +48,20 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
         super.onCreate(savedInstanceState);
 
         Context ctx = getApplicationContext();
+
+        File basePath = new File(ctx.getCacheDir(), "osmdroid");
+        Configuration.getInstance().setOsmdroidBasePath(basePath);
+        Configuration.getInstance().setOsmdroidTileCache(new File(basePath, "tiles"));
+
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        Configuration.getInstance().setUserAgentValue("PruebaAndroid2/1.0 (guerranicolas7@gmail.com)");
-        clearOsmTileCache();
+
+        Configuration.getInstance().setUserAgentValue("M/ a@gmail.com");
 
         setContentView(R.layout.activity_open_street_map);
-
         map = findViewById(R.id.mapView);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.WIKIMEDIA);
         map.setMultiTouchControls(true);
-        map.getController().setZoom(15.0);
+        map.getController().setZoom(20.0);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -68,31 +75,6 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
         checkLocationPermissionAndFetchLocation();
     }
 
-    private void clearOsmTileCache() {
-        try {
-            File tileCache = Configuration.getInstance().getOsmdroidTileCache();
-            if (tileCache != null && tileCache.exists()) {
-                deleteDir(tileCache);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            if (children != null) {
-                for (String child : children) {
-                    boolean success = deleteDir(new File(dir, child));
-                    if (!success) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return dir != null && dir.delete();
-    }
 
     private void addMarker(GeoPoint p) {
         if (markers.size() >= 2) {
@@ -105,7 +87,20 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
         newMarker.setPosition(p);
         newMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         newMarker.setTitle("Punto fijado");
-        newMarker.setIcon(ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.osm_ic_center_map));
+
+        Drawable originalDrawable = ContextCompat.getDrawable(this, R.drawable.images);
+
+        if (originalDrawable != null) {
+            Bitmap bitmap = ((BitmapDrawable) originalDrawable).getBitmap();
+
+            int anchoPixel = 64;
+            int altoPixel = 64;
+
+            Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmap, anchoPixel, altoPixel, true);
+
+            Drawable iconoFinal = new BitmapDrawable(getResources(), bitmapAchicado);
+            newMarker.setIcon(iconoFinal);
+        }
 
         map.getOverlays().add(newMarker);
         markers.add(newMarker);
@@ -115,7 +110,7 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
     private void checkLocationPermissionAndFetchLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            
+
             fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {

@@ -2,6 +2,8 @@ package com.example.pruebaandroid2;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -32,6 +34,8 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private final LatLng defaultLocation = new LatLng(-33.498992, -70.616743);
     private List<Marker> markers = new ArrayList<>();
+
+    private Marker userLocationMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +72,13 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
             markers.remove(0);
         }
 
+        Bitmap bitmapOriginal = BitmapFactory.decodeResource(getResources(), R.drawable.images);
+        Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmapOriginal, 100, 100, false);
+
         Marker newMarker = mMap.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title("Punto fijado")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmapAchicado)));
         markers.add(newMarker);
     }
 
@@ -84,6 +91,19 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
                 public void onSuccess(Location location) {
                     if (location != null) {
                         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        if (userLocationMarker != null) {
+                            userLocationMarker.remove();
+                        }
+
+                        Bitmap bitmapUsuarioOriginal = BitmapFactory.decodeResource(getResources(), R.drawable.imagesyo);
+                        Bitmap bitmapUsuarioAchicado = Bitmap.createScaledBitmap(bitmapUsuarioOriginal, 100, 100, false);
+
+                        userLocationMarker = mMap.addMarker(new MarkerOptions()
+                                .position(currentLatLng)
+                                .title("Mi ubicación actual")
+                                .icon(BitmapDescriptorFactory.fromBitmap(bitmapUsuarioAchicado)));
+
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f));
                     } else {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 15f));
