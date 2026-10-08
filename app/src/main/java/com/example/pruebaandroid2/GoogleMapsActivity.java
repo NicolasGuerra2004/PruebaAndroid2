@@ -33,8 +33,9 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private final LatLng defaultLocation = new LatLng(-33.498992, -70.616743);
-    private List<Marker> markers = new ArrayList<>();
-
+    private List<Marker> dynamicMarkers = new ArrayList<>();
+    private Marker fixedMarker2 = null;
+    private Marker fixedMarker3 = null;
     private Marker userLocationMarker;
 
     @Override
@@ -55,6 +56,9 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        addMarker2(null);
+        addMarker3(null);
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -66,10 +70,10 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void addMarker(LatLng latLng) {
-        if (markers.size() >= 2) {
-            Marker oldestMarker = markers.get(0);
+        if (dynamicMarkers.size() >= 1) {
+            Marker oldestMarker = dynamicMarkers.get(0);
             oldestMarker.remove();
-            markers.remove(0);
+            dynamicMarkers.remove(0);
         }
 
         Bitmap bitmapOriginal = BitmapFactory.decodeResource(getResources(), R.drawable.images);
@@ -77,9 +81,37 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
 
         Marker newMarker = mMap.addMarker(new MarkerOptions()
                 .position(latLng)
-                .title("Punto fijado")
+                .title("Punto dinámico")
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmapAchicado)));
-        markers.add(newMarker);
+        dynamicMarkers.add(newMarker);
+    }
+
+    private void addMarker2(LatLng latLng) {
+        if (fixedMarker2 != null) {
+            return;
+        }
+
+        Bitmap bitmapOriginal = BitmapFactory.decodeResource(getResources(), R.drawable.images);
+        Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmapOriginal, 100, 100, false);
+
+        fixedMarker2 = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(-33.498688, -70.616103))
+                .title("Punto fijo 2")
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmapAchicado)));
+    }
+
+    private void addMarker3(LatLng latLng) {
+        if (fixedMarker3 != null) {
+            return;
+        }
+
+        Bitmap bitmapOriginal = BitmapFactory.decodeResource(getResources(), R.drawable.images);
+        Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmapOriginal, 100, 100, false);
+
+        fixedMarker3 = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(-33.498862, -70.615650))
+                .title("Punto fijo 3")
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmapAchicado)));
     }
 
     private void checkLocationPermissionAndFetchLocation() {

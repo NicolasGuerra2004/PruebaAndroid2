@@ -40,7 +40,10 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private final GeoPoint defaultLocation = new GeoPoint(-33.498992, -70.616743);
-    private List<Marker> markers = new ArrayList<>();
+    private List<Marker> dynamicMarkers = new ArrayList<>();
+    private Marker fixedMarker2 = null;
+    private Marker fixedMarker3 = null;
+
     private MyLocationNewOverlay myLocationOverlay;
 
     @Override
@@ -72,38 +75,75 @@ public class OpenStreetMapActivity extends AppCompatActivity implements MapEvent
         myLocationOverlay.enableMyLocation();
         map.getOverlays().add(myLocationOverlay);
 
+        addMarker2(null);
+        addMarker3(null);
+
         checkLocationPermissionAndFetchLocation();
     }
-
-
     private void addMarker(GeoPoint p) {
-        if (markers.size() >= 2) {
-            Marker oldestMarker = markers.get(0);
-            map.getOverlays().remove(oldestMarker);
-            markers.remove(0);
+        if (dynamicMarkers.size() >= 1) {
+            Marker oldestMarker = dynamicMarkers.get(0);
+            map.getOverlays().remove(oldestMarker); // Lo quita de la vista de osmdroid
+            dynamicMarkers.remove(0); // Lo borra de la lista de seguimiento
         }
 
         Marker newMarker = new Marker(map);
         newMarker.setPosition(p);
         newMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        newMarker.setTitle("Punto fijado");
+        newMarker.setTitle("Punto dinámico");
 
         Drawable originalDrawable = ContextCompat.getDrawable(this, R.drawable.images);
-
         if (originalDrawable != null) {
             Bitmap bitmap = ((BitmapDrawable) originalDrawable).getBitmap();
-
-            int anchoPixel = 64;
-            int altoPixel = 64;
-
-            Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmap, anchoPixel, altoPixel, true);
-
+            Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmap, 64, 64, true);
             Drawable iconoFinal = new BitmapDrawable(getResources(), bitmapAchicado);
             newMarker.setIcon(iconoFinal);
         }
 
         map.getOverlays().add(newMarker);
-        markers.add(newMarker);
+        dynamicMarkers.add(newMarker);
+        map.invalidate();
+    }
+    private void addMarker2(GeoPoint p) {
+        if (fixedMarker2 != null) {
+            return;
+        }
+
+        fixedMarker2 = new Marker(map);
+        fixedMarker2.setPosition(new GeoPoint(-33.498688, -70.616103));
+        fixedMarker2.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        fixedMarker2.setTitle("Punto fijo 2");
+
+        Drawable originalDrawable = ContextCompat.getDrawable(this, R.drawable.images);
+        if (originalDrawable != null) {
+            Bitmap bitmap = ((BitmapDrawable) originalDrawable).getBitmap();
+            Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmap, 64, 64, true);
+            Drawable iconoFinal = new BitmapDrawable(getResources(), bitmapAchicado);
+            fixedMarker2.setIcon(iconoFinal);
+        }
+
+        map.getOverlays().add(fixedMarker2);
+        map.invalidate();
+    }
+    private void addMarker3(GeoPoint p) {
+        if (fixedMarker3 != null) {
+            return;
+        }
+
+        fixedMarker3 = new Marker(map);
+        fixedMarker3.setPosition(new GeoPoint(-33.498862, -70.615650));
+        fixedMarker3.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        fixedMarker3.setTitle("Punto fijo 3");
+
+        Drawable originalDrawable = ContextCompat.getDrawable(this, R.drawable.images);
+        if (originalDrawable != null) {
+            Bitmap bitmap = ((BitmapDrawable) originalDrawable).getBitmap();
+            Bitmap bitmapAchicado = Bitmap.createScaledBitmap(bitmap, 64, 64, true);
+            Drawable iconoFinal = new BitmapDrawable(getResources(), bitmapAchicado);
+            fixedMarker3.setIcon(iconoFinal);
+        }
+
+        map.getOverlays().add(fixedMarker3);
         map.invalidate();
     }
 
